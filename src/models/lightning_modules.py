@@ -36,9 +36,9 @@ class CustomDataset(Dataset):
             'label': torch.tensor(label, dtype=torch.long)
         }
 
-class model(pl.LightningModule):
+class TextClassifier(pl.LightningModule):
     def __init__(self, bert_model, learning_rate=2e-5):
-        super(model, self).__init__()
+        super(TextClassifier, self).__init__()
         self.bert = bert_model
         self.dropout = nn.Dropout(0.1)
         self.fc = nn.Linear(self.bert.config.hidden_size, 1)
