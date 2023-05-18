@@ -1,8 +1,11 @@
 import torch
 import torch.nn as nn
+import torch.optim as optim
 from torch.utils.data import Dataset
+from transformers import BertModel, BertTokenizer
 import pytorch_lightning as pl
 from torchmetrics.classification import BinaryAccuracy
+import torch.nn.functional as F
 
 class CustomDataset(Dataset):
     def __init__(self, texts, labels, tokenizer, max_length):
@@ -32,3 +35,46 @@ class CustomDataset(Dataset):
             'attention_mask': encoding['attention_mask'].flatten(),
             'label': torch.tensor(label, dtype=torch.long)
         }
+
+class model(pl.LightningModule):
+    def __init__(self, bert_model, learning_rate=2e-5):
+        super(model, self).__init__()
+        self.bert = bert_model
+        self.dropout = nn.Dropout(0.1)
+        self.fc = nn.Linear(self.bert.config.hidden_size, 1)
+        self.learning_rate = learning_rate
+
+    def forward(self, input_ids, attention_mask):
+        outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+        pooled_output = outputs.pooler_output
+        x = self.dropout(pooled_output)
+        x = self.fc(x)
+        x = nn.Sigmoid(x)
+        return x
+
+    def training_step(self, batch, batch_idx):
+        input_ids = batch['input_ids']
+        attention_mask = batch['attention_mask']
+        labels = batch['label']
+
+        outputs = self.forward(input_ids, attention_mask)
+        criterion = nn.BCELoss()
+        loss = criterion(outputs, labels)
+
+        self.log('train_loss', loss)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        input_ids = batch['input_ids']
+        attention_mask = batch['attention_mask']
+        labels = batch['label']
+
+        outputs = self.forward(input_ids, attention_mask)
+        criterion = nn.BCELoss()
+        loss = criterion(outputs, labels)
+
+        self.log('val_loss', loss, prog_bar=True)
+
+    def configure_optimizers(self):
+        optimizer = optim.Adam(self.parameters(), lr=self.learning_rate)
+        return optimizer
