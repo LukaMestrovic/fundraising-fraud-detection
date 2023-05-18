@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset
-from transformers import BertModel, BertTokenizer
 import pytorch_lightning as pl
 from torchmetrics.classification import BinaryAccuracy
 import torch.nn.functional as F
@@ -33,7 +32,7 @@ class CustomDataset(Dataset):
         return {
             'input_ids': encoding['input_ids'].flatten(),
             'attention_mask': encoding['attention_mask'].flatten(),
-            'label': torch.tensor(label, dtype=torch.long)
+            'label': torch.tensor(label, dtype=torch.float16)
         }
 
 class TextClassifier(pl.LightningModule):
@@ -49,7 +48,6 @@ class TextClassifier(pl.LightningModule):
         pooled_output = outputs.pooler_output
         x = self.dropout(pooled_output)
         x = self.fc(x)
-        x = nn.Sigmoid(x)
         return x
 
     def training_step(self, batch, batch_idx):
@@ -58,8 +56,9 @@ class TextClassifier(pl.LightningModule):
         labels = batch['label']
 
         outputs = self.forward(input_ids, attention_mask)
-        criterion = nn.BCELoss()
-        loss = criterion(outputs, labels)
+        outputs = outputs.flatten()
+        outputs = outputs.half()
+        loss = F.binary_cross_entropy_with_logits(outputs, labels)
 
         self.log('train_loss', loss)
         return loss
@@ -70,8 +69,9 @@ class TextClassifier(pl.LightningModule):
         labels = batch['label']
 
         outputs = self.forward(input_ids, attention_mask)
-        criterion = nn.BCELoss()
-        loss = criterion(outputs, labels)
+        outputs = outputs.flatten()
+        outputs = outputs.half()
+        loss = F.binary_cross_entropy_with_logits(outputs, labels)
 
         self.log('val_loss', loss, prog_bar=True)
 
