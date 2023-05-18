@@ -32,16 +32,19 @@ class CustomDataset(Dataset):
         return {
             'input_ids': encoding['input_ids'].flatten(),
             'attention_mask': encoding['attention_mask'].flatten(),
-            'label': torch.tensor(label, dtype=torch.float16)
+            'label': torch.tensor(label, dtype=torch.float32)
         }
 
 class TextClassifier(pl.LightningModule):
     def __init__(self, bert_model, learning_rate=2e-5):
         super(TextClassifier, self).__init__()
+        self.learning_rate = learning_rate
+        self.train_acc = BinaryAccuracy()
+        self.val_acc = BinaryAccuracy()
+
         self.bert = bert_model
         self.dropout = nn.Dropout(0.1)
         self.fc = nn.Linear(self.bert.config.hidden_size, 1)
-        self.learning_rate = learning_rate
 
     def forward(self, input_ids, attention_mask):
         outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
@@ -57,11 +60,16 @@ class TextClassifier(pl.LightningModule):
 
         outputs = self.forward(input_ids, attention_mask)
         outputs = outputs.flatten()
-        outputs = outputs.half()
+        outputs = outputs.float()
         loss = F.binary_cross_entropy_with_logits(outputs, labels)
+        self.train_acc.update(outputs, labels)
 
         self.log('train_loss', loss)
         return loss
+    def on_train_epoch_end(self):
+        train_acc = self.train_acc.compute()
+        self.log("train_accuracy", train_acc, on_epoch=True, prog_bar=True, logger=True)
+        self.train_acc.reset()
 
     def validation_step(self, batch, batch_idx):
         input_ids = batch['input_ids']
@@ -70,10 +78,16 @@ class TextClassifier(pl.LightningModule):
 
         outputs = self.forward(input_ids, attention_mask)
         outputs = outputs.flatten()
-        outputs = outputs.half()
+        outputs = outputs.float()
         loss = F.binary_cross_entropy_with_logits(outputs, labels)
+        self.val_acc.update(outputs, labels)
 
         self.log('val_loss', loss, prog_bar=True)
+    
+    def on_validation_epoch_end(self):
+        val_acc = self.val_acc.compute()
+        self.log("val_accuracy", val_acc, on_epoch=True, prog_bar=True, logger=True)
+        self.val_acc.reset()
 
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr=self.learning_rate)
