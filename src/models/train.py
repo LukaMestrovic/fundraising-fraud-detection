@@ -13,7 +13,7 @@ from data.data_preprocessing import data_preprocessing
 #hyper parameters
 lr = 2e-5
 batch_size = 1
-epochs = 10
+epochs = 1
 num_workers = os.cpu_count()
 max_length = 32
 
@@ -36,5 +36,6 @@ val_dataloader = DataLoader(val_dataset, batch_size=batch_size, num_workers=num_
 
 model = TextClassifier(model, learning_rate=lr)
 
-trainer = pl.Trainer(max_epochs=epochs, precision=16, accelerator='gpu')
+trainer = pl.Trainer(callbacks=[ModelCheckpoint(monitor='val_loss', save_top_k=1, dirpath='../../models/', filename='best_model')],
+                     max_epochs=epochs, fast_dev_run=False, precision=16, accelerator='cpu', log_every_n_steps=1)
 trainer.fit(model, train_dataloader, val_dataloader)
