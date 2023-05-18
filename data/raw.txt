@@ -1,0 +1,51 @@
+[{
+    "mail": "ivan@mail.ru",
+    "text": "I am Marin Mestrovic.",
+    "label": 0
+},
+{
+    "mail": "vivodo3565@epeva.com",
+    "text": "I am Luka Mestrovic",
+    "label": 1
+},
+{
+    "mail": "vivodo3565@epeva.com",
+    "text": "I am Luka Mestrovic",
+    "label": 1
+},
+{
+    "mail": "vivodo3565@epeva.com",
+    "text": "I am Luka Mestrovic",
+    "label": 1
+},
+{
+    "mail": "vivodo3565@epeva.com",
+    "text": "I am Luka Mestrovic",
+    "label": 1
+},
+{
+    "mail": "vivodo3565@epeva.com",
+    "text": "I am Luka Mestrovic",
+    "label": 1
+},
+{
+    "mail": "vivodo3565@epeva.com",
+    "text": "I am Luka Mestrovic",
+    "label": 1
+},
+{
+    "mail": "vivodo3565@epeva.com",
+    "text": "I am Luka Mestrovic",
+    "label": 1
+},
+{
+    "mail": "vivodo3565@epeva.com",
+    "text": "I am Luka Mestrovic",
+    "label": 1
+},
+{
+    "mail": "vivodo3565@epeva.com",
+    "text": "I am Luka Mestrovic",
+    "label": 1
+}]
+
