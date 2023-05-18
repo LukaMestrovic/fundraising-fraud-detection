@@ -1,6 +1,7 @@
 import json
+import random
 
-def data_preprocessing(path = "../../data/raw.txt"):
+def data_preprocessing(path):
 
     # Open text file in read mode
     file = open(path, "r")
@@ -12,13 +13,22 @@ def data_preprocessing(path = "../../data/raw.txt"):
     file.close()
 
     raw = json.loads(raw)
+    random.shuffle(raw)
 
-    processed = {
-        "mail": [ad["mail"] for ad in raw],
-        "text": [ad["text"] for ad in raw],
-        "label": [ad["label"] for ad in raw],
+    slice = int(0.8 * len(raw))
+
+    processed_train = {
+        "mail": [ad["mail"] for ad in raw[:slice]],
+        "text": [ad["text"] for ad in raw[:slice]],
+        "label": [ad["label"] for ad in raw[:slice]]
     }
 
-    return processed
+    processed_val = {
+        "mail": [ad["mail"] for ad in raw[slice:]],
+        "text": [ad["text"] for ad in raw[slice:]],
+        "label": [ad["label"] for ad in raw[slice:]]
+    }
 
-print(data_preprocessing())
+    return (processed_train, processed_val)
+
+print(data_preprocessing("../../data/raw.txt"))
