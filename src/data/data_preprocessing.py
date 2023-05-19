@@ -30,5 +30,3 @@ def data_preprocessing(path):
     }
 
     return (processed_train, processed_val)
-
-print(data_preprocessing("../../data/raw.txt"))
