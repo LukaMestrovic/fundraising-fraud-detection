@@ -1,0 +1,13 @@
+name: lightning-instrument-recognition
+channels:
+  - pytorch
+  - conda-forge
+dependencies:
+  - python=3.11.3
+  - ipykernel=6.19.2
+  - ipython=8.12.0
+  - pip=23.0.1
+  - pip:
+      - pytorch-lightning==2.0.2
+      - numpy==1.24.3
+      - tensorboard==2.13.0
